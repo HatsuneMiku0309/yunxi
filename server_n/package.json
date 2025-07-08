@@ -1,0 +1,51 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "build-watch": "tsc --watch",
+    "test": "jest",
+    "test-coverage": "jest --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@koa/cors": "^5.0.0",
+    "busboy": "^1.6.0",
+    "dayjs": "^1.11.13",
+    "decimal.js": "^10.6.0",
+    "dotenv": "^16.4.5",
+    "formidable": "^3.5.2",
+    "got": "^14.4.5",
+    "jsonwebtoken": "^9.0.2",
+    "koa": "^2.15.3",
+    "koa-body": "^6.0.1",
+    "koa-json": "^2.0.2",
+    "koa-router": "^13.0.1",
+    "lodash": "^4.17.21",
+    "mime-types": "^2.1.35",
+    "pg": "^8.13.1",
+    "q": "^1.5.1",
+    "uuid": "^11.0.3"
+  },
+  "devDependencies": {
+    "@types/busboy": "^1.5.4",
+    "@types/formidable": "^3.4.5",
+    "@types/got": "^9.6.12",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/koa": "^2.15.0",
+    "@types/koa__cors": "^5.0.0",
+    "@types/koa-json": "^2.0.23",
+    "@types/koa-router": "^7.4.8",
+    "@types/lodash": "^4.17.13",
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "@types/q": "^1.5.8",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.8.3"
+  }
+}
