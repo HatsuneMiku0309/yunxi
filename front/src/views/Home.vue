@@ -22,10 +22,10 @@ onMounted(() => {
       arrows
     >
       <q-carousel-slide name="aa" class="flex justify-center bg-black !p-0">
-        <video class="q-video h-full border-2" src="/培训日.mp4" controls playsinline autoplay loop></video>
+        <video class="q-video h-full border-2" src="/培训日.mp4" controls playsinline autoplay loop muted></video>
       </q-carousel-slide>
       <q-carousel-slide name="bb" class="flex justify-center bg-black !p-0">
-        <video class="q-video h-full border-2" src="/培训日.mp4" controls playsinline autoplay loop></video>
+        <video class="q-video h-full border-2" src="/培训日.mp4" controls playsinline autoplay loop muted></video>
       </q-carousel-slide>
     </q-carousel>
     

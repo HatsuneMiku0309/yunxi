@@ -7,7 +7,7 @@ interface IAnyObject {
 
 const instance = axios.create({
   baseURL: `http://${window.location.hostname}:3000/api`,
-  // baseURL: `http://192.168.1.216:5173/api`,
+  // baseURL: `http://192.168.1.5:5173/api`,
   withCredentials: true,
   // headers: {
   //   'Content-Type': 'application/json'

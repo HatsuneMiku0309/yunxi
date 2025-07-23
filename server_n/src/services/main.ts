@@ -13,6 +13,7 @@ import { ServiceRouter } from './services/router';
 import { WorkRecordRouter } from './work_records/router';
 import { SettingRouter } from './setting/router';
 import { SalaryRouter } from './salarys/router';
+import { IncomeReportRouter } from './income_reports/router';
 import { Utils } from './utils';
 
 export class Service {
@@ -39,7 +40,8 @@ export class Service {
             new RoomRouter(this._pgDb, { utils: this._utils }),
             new WorkRecordRouter(this._pgDb, { utils: this._utils }),
             new SettingRouter(this._pgDb, { utils: this._utils }),
-            new SalaryRouter(this._pgDb, { utils: this._utils })
+            new SalaryRouter(this._pgDb, { utils: this._utils }),
+            new IncomeReportRouter(this._pgDb, { utils: this._utils })
         ];
         const nAuthRouters: any[] = [
             new LoginRouter(this._pgDb, this._config),

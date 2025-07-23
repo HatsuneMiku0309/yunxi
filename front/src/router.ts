@@ -12,6 +12,7 @@ import Setting from '@views/Setting.vue';
 import Maintain from '@views/Maintain.vue';
 import ReceivingPayments from '@/views/ReceivingPayment.vue';
 import Dashboard from './views/Dashboard.vue';
+import IcomeReport from './views/IcomeReport.vue';
 import { sort } from '@/utils/utils';
 import { getBreadcrumbsList, useBreadcrumbsStore } from '@stores/BreadcrumbsStore';
 import { get } from '@utils/api';
@@ -78,6 +79,19 @@ const routes: RouteRecordRaw[] = [
             label: '仪表板',
             icon: 'dashboard',
             order: 2,
+            requiresAuth: true,
+            requiresAdmin: true
+          }
+        }, {
+          name: 'income_report',
+          path: '/income_report',
+          component: IcomeReport,
+          meta: {
+            showInMenu: true,
+            showBlock: ERouterBlock.normal,
+            label: '进账报表',
+            icon: 'monetization_on',
+            order: 3,
             requiresAuth: true,
             requiresAdmin: true
           }
