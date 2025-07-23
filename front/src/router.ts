@@ -82,19 +82,6 @@ const routes: RouteRecordRaw[] = [
             requiresAuth: true,
             requiresAdmin: true
           }
-        }, {
-          name: 'income_report',
-          path: '/income_report',
-          component: IcomeReport,
-          meta: {
-            showInMenu: true,
-            showBlock: ERouterBlock.normal,
-            label: '进账报表',
-            icon: 'monetization_on',
-            order: 3,
-            requiresAuth: true,
-            requiresAdmin: true
-          }
         }, { 
           name: 'clock_in',
           path: '/clock_in',
@@ -143,6 +130,19 @@ const routes: RouteRecordRaw[] = [
             requiresAuth: true
           }
         }, {
+          name: 'income_report',
+          path: '/income_report',
+          component: IcomeReport,
+          meta: {
+            showInMenu: true,
+            showBlock: ERouterBlock.function,
+            label: '进账报表',
+            icon: 'monetization_on',
+            order: 4,
+            requiresAuth: true,
+            requiresAdmin: true
+          }
+        }, {
           name: 'receiving_payments',
           path: '/receiving_payments',
           component: ReceivingPayments,
@@ -151,7 +151,7 @@ const routes: RouteRecordRaw[] = [
             showBlock: ERouterBlock.function,
             label: '收款',
             icon: 'payments',
-            order: 4,
+            order: 5,
             requiresAuth: true,
             requiresAdmin: true
           }
