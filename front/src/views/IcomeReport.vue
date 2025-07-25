@@ -154,10 +154,10 @@ function changeGroupKey() {
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">日期</th>
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">技师</th>
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">服务项目</th>
-                    <th class="sticky top-0 z-10 bg-brown-14 text-white">服务价格</th>
+                    <th class="sticky top-0 z-10 bg-brown-14 text-white">服务收款金额</th>
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">额外金额</th>
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">总金额</th>
-                    <th class="sticky top-0 z-10 bg-brown-14 text-white">工资（点/加/奖）</th>
+                    <th class="sticky top-0 z-10 bg-brown-14 text-white">工资（点/加/奖/额外金额）</th>
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">平台</th>
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">抽成金额</th>
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">优惠金额</th>

@@ -13,6 +13,7 @@ import Maintain from '@views/Maintain.vue';
 import ReceivingPayments from '@/views/ReceivingPayment.vue';
 import Dashboard from './views/Dashboard.vue';
 import IcomeReport from './views/IcomeReport.vue';
+import Member from './views/maintains/Member.vue';
 import { sort } from '@/utils/utils';
 import { getBreadcrumbsList, useBreadcrumbsStore } from '@stores/BreadcrumbsStore';
 import { get } from '@utils/api';
@@ -192,6 +193,19 @@ const routes: RouteRecordRaw[] = [
               label: '技师',
               icon: 'man',
               order: 2,
+              requiresAuth: true,
+              requiresAdmin: true,
+            }
+          }, {
+            name: 'member',
+            path: 'member',
+            component: Member,
+            meta: {
+              showInMenu: true,
+              showBlock: ERouterBlock.normal,
+              label: '会员卡',
+              icon: 'group_add',
+              order: 3,
               requiresAuth: true,
               requiresAdmin: true,
             }

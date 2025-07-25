@@ -66,7 +66,8 @@ export class Authentication {
         } catch (err: any) {
           ctx.status = 500;
           ctx.body = {
-            errMsg: err.message
+            errMsg: err.message,
+            data: err.data
           };
         }
       } catch (err: any) {
