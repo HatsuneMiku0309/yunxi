@@ -8,11 +8,15 @@ import { IUserRow } from "../user/user.interface";
 import { IServiceRow } from "../services/service.interface";
 import dayjs = require("dayjs");
 import { EWorkerStatus } from "../workers/worker.interface";
+import { Utils } from "../utils";
+import { IMembersService } from "../members/members.interface";
 
 export class WorkerRecordService implements IWorkRecordService {
   private readonly _pgDb: IPgDb;
-  constructor(pgDB: IPgDb) {
+  private readonly _utils: Utils;
+  constructor(pgDB: IPgDb, utils: Utils) {
       this._pgDb = pgDB;
+      this._utils = utils
   }
 
   private async _selectWorkRecordToClockIn (conn: PoolClient, body: IWorkRecordClockInPayload) {
@@ -207,6 +211,13 @@ export class WorkerRecordService implements IWorkRecordService {
     }
   }
 
+  private async _memberPay(id: string | undefined, price: number) {
+    if (id) {
+      const memberService = <IMembersService> this._utils.get('member');
+      await memberService.payMoney(id, { price });
+    }
+  }
+
   async actionPay(id: string, body: IWorkRecordPayActionPayload): Promise<{ id: string; }> {
     const conn = await this._pgDb.getPool().connect();
     try {
@@ -228,6 +239,7 @@ export class WorkerRecordService implements IWorkRecordService {
       const servicePayRow = servicePayRows[0];
       let _body = {
         ...body,
+        member_id: body.member_id ? body.member_id : undefined,
         service_pay_platform: servicePayRow.platform,
         service_pay_price: servicePayRow.is_write ? body.other_pay_price : servicePayRow.price,
         service_pay_time: servicePayRow.time,
@@ -243,6 +255,7 @@ export class WorkerRecordService implements IWorkRecordService {
           pay_time = $${++nextIndex} 
         WHERE id = $${++nextIndex} RETURNING id`;
       const { rows: _rows } = await conn.query(sql, [ ...sets, new Date(), new Date(), id ]);
+      await this._memberPay(_body.member_id, Number(_body.service_pay_price));
       await this._setPayDependencesStatus(conn, id);
       await this._pgDb.setCommit(conn);
 

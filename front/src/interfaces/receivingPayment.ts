@@ -72,6 +72,7 @@ export interface IReceivingPaymentActionPayload {
     discount_price: string;
     extend_price: string;
     desc: string;
+    member_id?: string;
 }
 
 
@@ -113,7 +114,7 @@ export interface IReceivingPaymentCreateOrUpdatePayload {
     room_id?: IRoomBaseData['id'];
     service_id?: IServiceBaseData['id'];
     worker_id?: IWorkerBaseData['id'];
-    service_pay_id?: IServicePayBaseData['id'];
-    other_pay_price?: number;
+    service_pay_id?: IServicePayBaseData['id'] | null;
+    other_pay_price?: number | null;
     status: EReceivingPaymentStatus;
 }

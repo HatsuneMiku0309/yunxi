@@ -27,5 +27,5 @@ export interface IServicePayExtendData {
 }
 
 export interface IServicePayPageData extends IServicePayBaseData, Omit<IServicePayExtendData, 'salary_price'> {
-
+    can_member_card: boolean;
 }

@@ -48,6 +48,7 @@ export interface IWorkRecordPayActionPayload {
   extend_price: string;
   discount_price: string;
   desc: string;
+  member_id: string | null;
 }
 
 export interface IWorkRecordCreateOrUpdatePayload {

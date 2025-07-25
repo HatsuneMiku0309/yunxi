@@ -27,7 +27,7 @@ export class WorkRecordRouter {
     }
 
     registerAPIs(pgDb: IPgDb) {
-        const workerRecord = new WorkerRecordService(pgDb);
+        const workerRecord = new WorkerRecordService(pgDb, this._utils);
         this._utils.registController('work_record', workerRecord);
         this._router.get('/work_records', async (ctx) => {
             const query = ctx.request.query;

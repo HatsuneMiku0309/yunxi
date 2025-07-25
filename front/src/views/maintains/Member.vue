@@ -121,11 +121,39 @@ async function rechargeCard() {
     }
 }
 
+async function create() {
+    $q.dialog({
+        component: CreateDialog
+    }).onOk(() => {
+        onClean();
+        loadDatas();
+    });
+}
+
+async function modify() {
+    if (!selectID.value) {
+        $q.notify({
+            message: '请选择会员',
+            color: 'red' 
+        });
+    } else {
+        $q.dialog({
+            component: ModifyDialog,
+            componentProps: {
+                item: selectItem.value
+            }
+        }).onOk(() => {
+            onClean();
+            loadDatas();
+        })
+    }
+}
+
 const memberAction = {
     [EMemberAction.pay_money]: payMoney,
     [EMemberAction.recharge_card]: rechargeCard,
-    [EMemberAction.create]: () => {},
-    [EMemberAction.modify]: () => {}
+    [EMemberAction.create]: create,
+    [EMemberAction.modify]: modify
 }
 
 function OnSelect(id: string, l: IMemberData) {
@@ -149,33 +177,12 @@ function onClean() {
 
 function onAction(action: EMemberAction) {
     actionMode.value = action;
-    if (actionMode.value === EMemberAction.create) {
-        $q.dialog({
-            component: CreateDialog
-        }).onOk(() => {
-            onClean();
-            loadDatas();
-        })
-    } else if (actionMode.value === EMemberAction.modify) {
-        if (!selectID.value) {
-            $q.notify({
-               message: '请选择会员',
-               color: 'red' 
-            });
-        } else {
-            $q.dialog({
-                component: ModifyDialog,
-                componentProps: {
-                    item: selectItem.value
-                }
-            }).onOk(() => {
-                onClean();
-                loadDatas();
-            })
-        }
-    } else {
-        form.value?.submit();
-    }
+    form.value?.submit();
+}
+
+function onEdit(action: EMemberAction) {
+    actionMode.value = action;
+    memberAction[actionMode.value]();
 }
 
 const isNotIOSAndSafari = computed(() => !$q.platform.is.ios && !$q.platform.is.safari);
@@ -193,7 +200,7 @@ const isNotIOSAndSafari = computed(() => !$q.platform.is.ios && !$q.platform.is.
                     </div>
                     <div class="flex">
                         <q-input :readonly="!selectID" class="w-full md:w-74" type="number" filled label="金额" v-model="price" lazy-rule :rules="[val => val && val.length > 0 || '请输入金额']" />
-                        <q-checkbox v-model="isFirst" label="首充值"></q-checkbox>
+                        <q-checkbox :disable="!selectID" v-model="isFirst" label="首充值"></q-checkbox>
                     </div>
                 </div>
                 <div class="flex justify-end mt-2 w-full md:w-0 md:grow">
@@ -216,16 +223,16 @@ const isNotIOSAndSafari = computed(() => !$q.platform.is.ios && !$q.platform.is.
                             </q-item>
                         </q-list>
                     </q-btn-dropdown>
-                    <q-btn-dropdown class="!mx-2" color="red" label="编辑">
+                    <q-btn-dropdown class="!mx-2" color="orange" label="编辑">
                         <q-list>
-                            <q-item clickable v-close-popup v-ripple @click="onAction(EMemberAction.create)">
+                            <q-item clickable v-close-popup v-ripple @click="onEdit(EMemberAction.create)">
                                 <q-item-section>
                                     <q-item-label>
                                         新增会员
                                     </q-item-label>
                                 </q-item-section>
                             </q-item>
-                            <q-item clickable v-close-popup v-ripple @click="onAction(EMemberAction.modify)">
+                            <q-item clickable v-close-popup v-ripple @click="onEdit(EMemberAction.modify)">
                                 <q-item-section>
                                     <q-item-label>
                                         修改会员

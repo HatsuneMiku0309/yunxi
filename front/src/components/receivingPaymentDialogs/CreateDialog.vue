@@ -72,7 +72,7 @@ async function modify() {
     if (statusTemp.value !== payload.status) {
         r = confirm('付款状态变更，是否确定提交？');
     }
-
+    console.log(payload);
     if (r) {
         // call modify api
         await put(`/work_record/${item.value!.id}`, payload);
@@ -121,25 +121,25 @@ onMounted(async () => {
 });
 
 function onChangeServiceID(id?: number, reload: boolean = false) {
-    onChangeServicePayID(undefined, reload);
+    onChangeServicePayID(null, reload);
     payload.service_id = id;
     const service = services.value.find((s) => s.id === id);
     servicePays.value = service ? service.service_pays : [];
 }
 
-function onChangeServicePayID(id?: number, reload: boolean = false) {
+function onChangeServicePayID(id?: number | null, reload: boolean = false) {
     payload.service_pay_id = id;
     isShowOtherPayPrice(id, reload);
 }
 
-function isShowOtherPayPrice(servciePayID?: number, reload: boolean = false) {
+function isShowOtherPayPrice(servciePayID?: number | null, reload: boolean = false) {
     const _servicePay = servicePays.value?.find((p) => p.id === servciePayID);
     if (_servicePay && _servicePay.is_write) {
         isOtherPayPrice.value = true;
-        payload.other_pay_price = reload ? item.value?.other_pay_price : undefined;
+        payload.other_pay_price = reload ? item.value?.other_pay_price : null;
     } else {
         isOtherPayPrice.value = false;
-        payload.other_pay_price = undefined;
+        payload.other_pay_price = null;
     }
 }
 

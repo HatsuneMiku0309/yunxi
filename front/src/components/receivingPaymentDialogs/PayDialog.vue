@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TAddition } from '@/interfaces/clockIn';
+import type { IMemberData } from '@/interfaces/member';
 import type { IReceivingPaymentActionPayload, IReceivingPaymentBaseData } from '@/interfaces/receivingPayment';
 import type { IServicePayPageData } from '@/interfaces/service';
 import { get, post } from '@/utils/api';
@@ -7,6 +8,10 @@ import { errorMsgParse } from '@/utils/utils';
 import dayjs from 'dayjs';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import { onMounted, ref, toRefs } from 'vue';
+
+interface IMemberOptions extends IMemberData {
+    label: string;
+}
 
 const $q = useQuasar();
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
@@ -18,6 +23,10 @@ const { item, itemIndex } = toRefs(props);
 const addition = ref<TAddition>(item.value.addition);
 const servicePayID = ref<number>();
 const isOtherPayPrice = ref<boolean>(false);
+const isMemberCard = ref<boolean>(false);
+let _memberCard: IMemberOptions[] = [];
+const memberCardID = ref<string>();
+const memberCards = ref<IMemberOptions[]>([]);
 // 覆盖原本金额
 const otherPayPrice = ref<string>();
 // 额外收取金额，分润（例如: 大宝/额外小费）
@@ -31,6 +40,13 @@ const servicePays = ref<Omit<IServicePayPageData, 'salary_price'>[]>([]);
 onMounted(async() => {
     const servicePayRes = await get(`/service/${item.value.service!.id}/service_pays`);
     servicePays.value = servicePayRes.data.data;
+    const memberCardRes = await get('/members');
+    _memberCard = memberCardRes.data.data.map((v: any) => {
+        v.label = `${v.name}-${v.phone}`;
+
+        return v;
+    });
+    memberCards.value = [..._memberCard];
     addition.value = item.value.addition;
     onChangeServicePayID(item.value.service_pay_id);
     otherPayPrice.value = item.value.other_pay_price?.toString();
@@ -58,7 +74,8 @@ async function onSubmit() {
             bonus_price: bonusPrice.value,
             discount_price: discountPrice.value,
             extend_price: extendPrice.value,
-            desc: desc.value
+            desc: desc.value,
+            member_id: memberCardID.value
         };
 
         try {
@@ -66,6 +83,7 @@ async function onSubmit() {
 
             onDialogOK(res);
         } catch (err: any) {
+            console.log(err);
             $q.notify({
                 message: errorMsgParse(err),
                 color: 'red'
@@ -76,7 +94,18 @@ async function onSubmit() {
 
 function onChangeServicePayID(id?: number) {
     servicePayID.value = id;
+    isShowMemberCards(id);
     isShowOtherPayPrice(id);
+}
+
+function isShowMemberCards(servciePayID?: number) {
+    memberCardID.value =undefined;
+    const _servicePay = servicePays.value.find((p) => p.id === servciePayID);
+    if (_servicePay && _servicePay.can_member_card) {
+        isMemberCard.value = true;
+    } else {
+        isMemberCard.value = false;
+    }
 }
 
 function isShowOtherPayPrice(servciePayID?: number) {
@@ -87,6 +116,20 @@ function isShowOtherPayPrice(servciePayID?: number) {
     } else {
         isOtherPayPrice.value = false;
     }
+}
+
+function filterFn(val: string, update: Function) {
+    if (val === '') {
+        update(() => {
+            memberCards.value = [..._memberCard];
+        })
+        return
+    }
+
+    update(() => {
+        const needle = val.toLowerCase()
+        memberCards.value = _memberCard.filter(v => v.label.toLowerCase().indexOf(needle) !== -1)
+    })
 }
 
 </script>
@@ -112,6 +155,7 @@ function isShowOtherPayPrice(servciePayID?: number) {
                 </q-card-section>
                 <q-card-section class="q-pt-none">
                     <q-select label="付款选项" v-model="servicePayID" :rules="[val => val !== undefined || '请输入付款选项']" :options="servicePays" option-label="platform" option-value="id" emit-value map-options @update:model-value="onChangeServicePayID"></q-select>
+                    <q-select v-if="isMemberCard" clearable use-input @filter="filterFn" label="会员卡" v-model="memberCardID" :options="memberCards" option-label="label" option-value="id" emit-value map-options></q-select>
                     <q-input v-if="isOtherPayPrice" lazy-rules :rules="[val => val && val.length > 0 || '请输入金额', val => val && val >= 0 || '请输入大于等于0']" type="number" v-model="otherPayPrice" label="其他金额"></q-input>
                 </q-card-section>
                 <q-card-section class="q-pt-none">
