@@ -1,3 +1,4 @@
+import { PoolClient } from "pg";
 import { IJWTPayload } from "../authentication/authentication.interface";
 
 export interface IMemberRow {
@@ -34,8 +35,11 @@ export interface IMemberCreatePayload {
 export interface IMembersService {
   getAll(query: IMemberQueryString, options: { user: IJWTPayload } ): Promise<IMemberRow[]>;
   payMoney(id: string, body: IMemberPayMoneyPayload): Promise<{ id: string }>;
+  dbPayMoney(conn: PoolClient, id: string, body: IMemberPayMoneyPayload): Promise<IMemberRow>;
   payAll(id: string): Promise<{ id: string }>;
+  dbPayAll(conn: PoolClient, id: string): Promise<IMemberRow>;
   rechargeCard(id: string, body: IMemberPayMoneyPayload): Promise<{id: string}>;
   create(body: IMemberCreatePayload): Promise<{ id: string }>;
   modify(id: string, body: IMemberRow): Promise<{ id: string }>;
+  calcMemberDiscount(row: IMemberRow, price: number): number;
 }

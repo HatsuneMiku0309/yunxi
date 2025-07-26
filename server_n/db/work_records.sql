@@ -28,5 +28,8 @@ CREATE TABLE public.work_records (
 	pay_time timestamptz NULL,
 	service_pay_time int4 NULL,
 	discount_price numeric DEFAULT 0 NULL,
+	member_id varchar DEFAULT ''::character varying NULL,
+	member_discount int4 NULL,
 	CONSTRAINT work_records_pkey PRIMARY KEY (id)
 );
+CREATE INDEX work_records_pay_time_idx ON public.work_records USING btree (pay_time);

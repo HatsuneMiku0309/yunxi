@@ -15,5 +15,6 @@ CREATE TABLE public.service_pays (
 	update_time timestamptz NULL,
 	salary_price numeric NOT NULL,
 	platform_id int4 NULL,
+	can_member_card bool DEFAULT false NULL,
 	CONSTRAINT service_pays_pkey PRIMARY KEY (id)
 );

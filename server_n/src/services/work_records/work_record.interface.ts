@@ -1,3 +1,4 @@
+import { PoolClient } from "pg";
 import { IJWTPayload } from "../authentication/authentication.interface";
 import { IServicePayRow } from "../services/service.interface";
 
@@ -22,6 +23,8 @@ export interface IWorkRecordRow {
   service_status: EWorkRecordServiceStatus;
   status: EWorkRecordStatus;
   pay_time?: Date;
+  member_id?: string;
+  member_discount: number;
 }
 
 export enum EWorkRecordStatus {
@@ -70,6 +73,8 @@ export interface IWorkRecordClockInPayload {
 export interface IWorkRecordService {
   getAll(query: any, options: { user: IJWTPayload }): Promise<IWorkRecordRow[]>;
   actionPay(id: string, body: IWorkRecordPayActionPayload): Promise<{ id: string }>;
+  dbActionPay(conn: PoolClient, id: string, body: IWorkRecordPayActionPayload): Promise<{ id: string; service_pay_price: string | number | undefined; member_id: string | undefined; }>;
+  actionMemberRepay(id: string, body: IWorkRecordPayActionPayload): Promise<{ id: string }>;
   actionCancel(id: string): Promise<{ id: string }>;
   clockIn(body: IWorkRecordClockInPayload): Promise<{ id: number }>;
   clockOut(id: string, options: { user: IJWTPayload }): Promise<{ id: string }>;

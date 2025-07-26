@@ -4,9 +4,11 @@ import * as _ from 'lodash';
 import { IJWTPayload } from "../authentication/authentication.interface";
 import { Decimal } from 'decimal.js';
 import { v4 as uuid } from 'uuid';
+import { PoolClient } from "pg";
 
 interface IError extends Error {
   message: string;
+  c_state?: string,
   data?: { [key: string]: any };
 }
 
@@ -66,35 +68,48 @@ export class MemberService implements IMembersService {
     }
   }
 
-  async payMoney(id: string, body: IMemberPayMoneyPayload): Promise<{ id: string; }> {
+  calcMemberDiscount(row: IMemberRow, price: number) {
+    let finalPrice = price;
+    if (row.is_first) {
+      finalPrice = new Decimal(price).mul(new Decimal(row.first_discount).div(100)).toNumber();
+    } else {
+      finalPrice = new Decimal(price).mul(new Decimal(row.discount).div(100)).toNumber();
+    }
+
+    return finalPrice;
+  }
+
+  async dbPayMoney(conn: PoolClient, id: string, body: IMemberPayMoneyPayload): Promise<IMemberRow> {
     const { price } = body;
+    const sql = 'select * from members where id = $1 FOR UPDATE';
+    const { rows } = await conn.query<IMemberRow>(sql, [id]);
+    const row = rows[0];
+    const finalPrice = await this.calcMemberDiscount(row, price);
+    if (row.price < finalPrice) {
+      let err: IError = new Error(`会员卡余额: ${row.price}，不足以支付: ${finalPrice}。需另外支付: ${new Decimal(finalPrice).sub(row.price).toNumber()}`);
+      const diffPrice = new Decimal(finalPrice).sub(row.price).toNumber();
+      err.c_state = 'member_price';
+      err.data = {
+        price: row.price,
+        finalPrice,
+        diffPrice
+      };
+
+      throw err;
+    }
+
+    const memberPrice = new Decimal(row.price).sub(finalPrice).toNumber();
+    const is_first = row.is_first ? false : row.is_first;
+    await conn.query('update members set price = $1, is_first = $2, update_time = $3 where id = $4', [memberPrice, is_first, new Date(), id]);
+
+    return row;
+  }
+
+  async payMoney(id: string, body: IMemberPayMoneyPayload): Promise<{ id: string; }> {
     const conn = await this._pgDb.getPool().connect();
     try {
       await this._pgDb.setTransaction(conn);
-      let sql = 'select * from members where id = $1 FOR UPDATE';
-      const { rows } = await conn.query<IMemberRow>(sql, [id]);
-      const row = rows[0];
-      let finalPrice = price;
-      if (row.is_first) {
-        finalPrice = new Decimal(price).mul(new Decimal(row.first_discount).div(100)).toNumber();
-      } else {
-        finalPrice = new Decimal(price).mul(new Decimal(row.discount).div(100)).toNumber();
-      }
-
-      const memberPrice = new Decimal(row.price).sub(finalPrice).toNumber();
-      const is_first = row.is_first ? false : row.is_first;
-      await conn.query('update members set price = $1, is_first = $2, update_time = $3 where id = $4', [memberPrice, is_first, new Date(), id]);
-
-      if (row.price < finalPrice) {
-        let err: IError = new Error(`会员卡余额: ${row.price}，不足以支付: ${finalPrice}。需另外支付: ${new Decimal(finalPrice).sub(row.price).toNumber()}`);
-        const diffPrice = new Decimal(finalPrice).sub(row.price).toNumber();
-        err.data = {
-          price: row.price,
-          finalPrice,
-          diffPrice
-        };
-        throw err;
-      }
+      await this.dbPayMoney(conn, id, body);
       await this._pgDb.setCommit(conn);
 
       return { id };
@@ -107,12 +122,27 @@ export class MemberService implements IMembersService {
     }
   }
 
+  async dbPayAll(conn: PoolClient, id: string): Promise<IMemberRow> {
+    const sql = 'select * from members where id = $1 FOR UPDATE';
+    const { rows } = await conn.query<IMemberRow>(sql, [id]);
+    const row = rows[0];
+    await conn.query('update members set price = 0, is_first = false, update_time = $1 where id = $2', [new Date(), id]);
+    
+    return row;
+  }
+
   async payAll(id: string): Promise<{ id: string; }> {
     const conn = await this._pgDb.getPool().connect();
     try {
-      await conn.query('update members set price = 0, is_first = false, update_time = $1 where id = $2', [new Date(), id]);
+      await this._pgDb.setTransaction(conn);
+      await this.dbPayAll(conn, id);
+      await this._pgDb.setCommit(conn);
 
       return { id };
+    } catch (err) {
+      await this._pgDb.setRollback(conn);
+
+      throw err;
     } finally {
       conn.release();
     }

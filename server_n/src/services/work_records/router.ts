@@ -56,7 +56,7 @@ export class WorkRecordRouter {
               throw err;
             }
         });
-        this._router.post('/work_record/:id/action/clock_out', async (ctx) => {
+        this._router.put('/work_record/:id/action/clock_out', async (ctx) => {
             const id = ctx.params.id;
             const user = ctx.state.user;
             try {
@@ -71,7 +71,7 @@ export class WorkRecordRouter {
         });
 
         
-        this._router.post('/work_record/:id/action/pay', this._checkAdmin, async (ctx) => {
+        this._router.put('/work_record/:id/action/pay', this._checkAdmin, async (ctx) => {
             const id = ctx.params.id;
             const body = <any> ctx.request.body;
             const user = ctx.state.user;
@@ -89,7 +89,25 @@ export class WorkRecordRouter {
             }
         });
 
-        this._router.post('/work_record/:id/action/cancel', this._checkAdmin, async (ctx) => {
+        this._router.put('/work_record/:id/action/member_repay', this._checkAdmin, async (ctx) => {
+            const id = ctx.params.id;
+            const body = <any> ctx.request.body;
+            const user = ctx.state.user;
+            try {
+                if (!user.is_admin) {
+                    throw new Error('该操作只允许Admin操作!');
+                }
+                const datas = await workerRecord.actionMemberRepay(id, body);
+
+                ctx.body = {
+                    data: datas
+                };
+            } catch (err) {
+              throw err;
+            }
+        });
+
+        this._router.put('/work_record/:id/action/cancel', this._checkAdmin, async (ctx) => {
             const id = ctx.params.id;
             try {
                 const datas = await workerRecord.actionCancel(id);

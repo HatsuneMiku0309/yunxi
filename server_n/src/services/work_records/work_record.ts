@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import { ERoomStatus, IRoomRow } from "../rooms/room.interface";
 import { IJWTPayload } from "../authentication/authentication.interface";
 import { IUserRow } from "../user/user.interface";
-import { IServiceRow } from "../services/service.interface";
+import { IServicePayRow, IServiceRow } from "../services/service.interface";
 import dayjs = require("dayjs");
 import { EWorkerStatus } from "../workers/worker.interface";
 import { Utils } from "../utils";
@@ -211,10 +211,40 @@ export class WorkerRecordService implements IWorkRecordService {
     }
   }
 
-  private async _memberPay(id: string | undefined, price: number) {
-    if (id) {
+  private async _memberRepay(conn: PoolClient, id: string, member_id: string | undefined, price: number) {
+    if (member_id) {
       const memberService = <IMembersService> this._utils.get('member');
-      await memberService.payMoney(id, { price });
+      const row = await memberService.dbPayAll(conn, member_id);
+      const finalPrice = memberService.calcMemberDiscount(row, price);
+      const memberDiscount = row.is_first ? row.first_discount : row.discount;
+      await conn.query('UPDATE work_records SET service_pay_price = $1, update_time = $2, member_discount = $3 WHERE id = $4', [finalPrice, new Date(), memberDiscount, id]);
+    }
+  }
+
+  async actionMemberRepay(id: string, body: IWorkRecordPayActionPayload): Promise<{ id: string; }> {
+    const conn = await this._pgDb.getPool().connect();
+    try {
+      await this._pgDb.setTransaction(conn);
+      const { member_id, service_pay_price } = await this.dbActionPay(conn, id, body);
+      await this._memberRepay(conn, id, member_id, Number(service_pay_price));
+      await this._pgDb.setCommit(conn);
+
+      return { id };
+    } catch (err) {
+      await this._pgDb.setRollback(conn);
+      throw err;
+    } finally {
+      conn.release();
+    }
+  }
+
+  private async _memberPay(conn: PoolClient, id: string, member_id: string | undefined, price: number) {
+    if (member_id) {
+      const memberService = <IMembersService> this._utils.get('member');
+      const row = await memberService.dbPayMoney(conn, member_id, { price });
+      const finalPrice = memberService.calcMemberDiscount(row, price);
+      const memberDiscount = row.is_first ? row.first_discount : row.discount;
+      await conn.query('UPDATE work_records SET service_pay_price = $1, update_time = $2, member_discount = $3 WHERE id = $4', [finalPrice, new Date(), memberDiscount, id]);
     }
   }
 
@@ -222,40 +252,8 @@ export class WorkerRecordService implements IWorkRecordService {
     const conn = await this._pgDb.getPool().connect();
     try {
       await this._pgDb.setTransaction(conn);
-      const { service_pay_id, service_id } = body;
-      if (service_pay_id === undefined || service_pay_id === null || service_id === undefined || service_id === null) {
-        throw new Error('缺少付款信息！');
-      }
-      const { rows: servicePayRows } = await conn.query('SELECT * FROM service_pays WHERE id = $1 AND service_id = $2 FOR UPDATE', [service_pay_id, service_id]);
-      if (servicePayRows.length !== 1) {
-        throw new Error('付款信息错误！');
-      }
-      const { rows } = await conn.query('SELECT * FROM work_records WHERE id = $1 FOR UPDATE', [id]);
-      const row = rows[0];
-      if ([EWorkRecordStatus.finish, EWorkRecordStatus.cancel].includes(row.status)) {
-        throw new Error('已经完成或取消的服务记录不可再付款！');
-      }
-
-      const servicePayRow = servicePayRows[0];
-      let _body = {
-        ...body,
-        member_id: body.member_id ? body.member_id : undefined,
-        service_pay_platform: servicePayRow.platform,
-        service_pay_price: servicePayRow.is_write ? body.other_pay_price : servicePayRow.price,
-        service_pay_time: servicePayRow.time,
-        service_pay_is_write: servicePayRow.is_write,
-        service_pay_salary_price: servicePayRow.is_write ? body.other_pay_price : servicePayRow.salary_price,
-        status: EWorkRecordStatus.finish,
-        service_status: EWorkRecordServiceStatus.finish
-      };
-
-      let { sets, setSql, nextIndex } = this._pgDb.grantUpdateSql(_body);
-      const sql = `UPDATE work_records SET
-          ${setSql}, update_time = $${++nextIndex},
-          pay_time = $${++nextIndex} 
-        WHERE id = $${++nextIndex} RETURNING id`;
-      const { rows: _rows } = await conn.query(sql, [ ...sets, new Date(), new Date(), id ]);
-      await this._memberPay(_body.member_id, Number(_body.service_pay_price));
+      const { member_id, service_pay_price } = await this.dbActionPay(conn, id, body);
+      await this._memberPay(conn, id, member_id, Number(service_pay_price));
       await this._setPayDependencesStatus(conn, id);
       await this._pgDb.setCommit(conn);
 
@@ -266,6 +264,44 @@ export class WorkerRecordService implements IWorkRecordService {
     } finally {
       conn.release();
     }
+  }
+  
+  async dbActionPay(conn: PoolClient, id: string, body: IWorkRecordPayActionPayload): Promise<{ id: string; service_pay_price: string | number | undefined; member_id: string | undefined; }> {
+    const { service_pay_id, service_id } = body;
+    if (service_pay_id === undefined || service_pay_id === null || service_id === undefined || service_id === null) {
+      throw new Error('缺少付款信息！');
+    }
+    const { rows: servicePayRows } = await conn.query<IServicePayRow>('SELECT * FROM service_pays WHERE id = $1 AND service_id = $2 FOR UPDATE', [service_pay_id, service_id]);
+    if (servicePayRows.length !== 1) {
+      throw new Error('付款信息错误！');
+    }
+    const { rows } = await conn.query('SELECT * FROM work_records WHERE id = $1 FOR UPDATE', [id]);
+    const row = rows[0];
+    if ([EWorkRecordStatus.finish, EWorkRecordStatus.cancel].includes(row.status)) {
+      throw new Error('已经完成或取消的服务记录不可再付款！');
+    }
+
+    const servicePayRow = servicePayRows[0];
+    let _body = {
+      ...body,
+      member_id: body.member_id ? body.member_id : undefined,
+      service_pay_platform: servicePayRow.platform,
+      service_pay_price: servicePayRow.is_write ? body.other_pay_price : servicePayRow.price,
+      service_pay_time: servicePayRow.time,
+      service_pay_is_write: servicePayRow.is_write,
+      service_pay_salary_price: servicePayRow.is_write ? body.other_pay_price : servicePayRow.salary_price,
+      status: EWorkRecordStatus.finish,
+      service_status: EWorkRecordServiceStatus.finish
+    };
+
+    let { sets, setSql, nextIndex } = this._pgDb.grantUpdateSql(_body);
+    const sql = `UPDATE work_records SET
+        ${setSql}, update_time = $${++nextIndex},
+        pay_time = $${++nextIndex} 
+      WHERE id = $${++nextIndex} RETURNING id`;
+    const { rows: _rows } = await conn.query(sql, [ ...sets, new Date(), new Date(), id ]);
+
+    return { id, service_pay_price: _body.service_pay_price, member_id: _body.member_id };
   }
 
   async actionCancel(id: string): Promise<{ id: string }> {

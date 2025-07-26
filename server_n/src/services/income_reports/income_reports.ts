@@ -90,7 +90,7 @@ export class IncomeReportService implements IIncomeReportService {
         const _increasePrice = _r.addition === 'increase' ? increasePrice.value : 0;
         const salary = new Decimal(_total_price).mul(new Decimal(profitSharing.value).div(100)).toNumber();
         _r.total_salary = new Decimal(salary).plus(_assignPrice).plus(_increasePrice).plus(_r.bonus_price || '0').toNumber();
-        _r.platform = platform ? platform.platform : '无';
+        _r.platform = r.member_id ? `会员卡【${r.member_discount}%】` : platform ? platform.platform : '无';
         _r.commission_price = platform ? new Decimal(_r.price).mul(new Decimal(platform.commission).div(100)).toNumber() : 0;
         _r.profit = new Decimal(_r.total_price).sub(_r.total_salary).sub(_r.commission_price).sub(_r.discount_price).toNumber();
 
