@@ -72,7 +72,6 @@ async function modify() {
     if (statusTemp.value !== payload.status) {
         r = confirm('付款状态变更，是否确定提交？');
     }
-    console.log(payload);
     if (r) {
         // call modify api
         await put(`/work_record/${item.value!.id}`, payload);

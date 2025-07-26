@@ -29,8 +29,6 @@ onMounted(() => {
     payload.is_first = item.value.is_first;
     payload.first_discount = item.value.first_discount.toString();
     payload.discount = item.value.discount.toString();
-
-    console.log(payload)
 });
 
 async function onSubmit() {
