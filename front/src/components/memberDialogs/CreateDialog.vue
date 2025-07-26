@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { useDialogPluginComponent, useQuasar } from 'quasar';
-import dayjs from 'dayjs';
 import { post } from '@/utils/api';
 import { errorMsgParse } from '@/utils/utils';
-import { reactive, ref } from 'vue';
+import { reactive } from 'vue';
 
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
 const $q = useQuasar();
