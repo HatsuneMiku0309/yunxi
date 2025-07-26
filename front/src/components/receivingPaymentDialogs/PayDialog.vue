@@ -3,7 +3,7 @@ import type { TAddition } from '@/interfaces/clockIn';
 import type { IMemberData } from '@/interfaces/member';
 import type { IReceivingPaymentActionPayload, IReceivingPaymentBaseData } from '@/interfaces/receivingPayment';
 import type { IServicePayPageData } from '@/interfaces/service';
-import { get, post } from '@/utils/api';
+import { get, put } from '@/utils/api';
 import { errorMsgParse } from '@/utils/utils';
 import dayjs from 'dayjs';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
@@ -79,15 +79,68 @@ async function onSubmit() {
         };
 
         try {
-            const res = await post(`/work_record/${id}/action/pay`, data);
+            const res = await put(`/work_record/${id}/action/pay`, data);
 
             onDialogOK(res);
         } catch (err: any) {
-            console.log(err);
-            $q.notify({
-                message: errorMsgParse(err),
-                color: 'red'
-            });
+            if (err.response.data.c_state === 'member_price') {
+                $q.dialog({
+                    title: '支付错误信息。',
+                    message: errorMsgParse(err),
+                    cancel: {
+                        push: true
+                    },
+                    ok: {
+                        push: true,
+                        color: 'red'
+                    },
+                }).onOk(async () => {
+                    const diffPrice = err.response.data.data.diffPrice;
+                    const r = confirm('确定使用会员卡付款部分金额，剩余使用其他支付方式？');
+                    if (r) {
+                        try {
+                            await put(`/work_record/${id}/action/member_repay`, data);
+
+                            $q.notify({
+                                message: `支付成功, 剩余应付款金额: ${diffPrice}`,
+                                color: 'yellow',
+                                textColor: 'black',
+                                timeout: 100000,
+                                actions: [
+                                    { label: '确认收款', color: 'black', handler: () => {
+                                        alert(`这是最后确认，请务必确认剩余应付款金额: ${diffPrice} 完成收款?`);
+                                    }}
+                                ]
+                            });
+
+                            onDialogOK(true);
+                        } catch (err) {
+                            $q.notify({
+                                message: errorMsgParse(err),
+                                color: 'red',
+                                timeout: 5000
+                            });
+                        }
+                    } else {
+                        $q.notify({
+                            message: '取消使用会员卡支付，请记得收全款。',
+                            color: 'red',
+                            timeout: 50000
+                        });
+                    }
+                }).onCancel(() => {
+                    $q.notify({
+                        message: '取消使用会员卡支付，请记得收全款。',
+                        color: 'red',
+                        timeout: 10000
+                    });
+                });
+            } else {
+                $q.notify({
+                    message: errorMsgParse(err),
+                    color: 'red'
+                });
+            }
         }
     }
 }

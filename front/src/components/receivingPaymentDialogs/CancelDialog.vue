@@ -3,7 +3,7 @@ import type { IReceivingPaymentBaseData } from '@/interfaces/receivingPayment';
 import { toRefs } from 'vue';
 import { useDialogPluginComponent, useQuasar } from 'quasar';
 import dayjs from 'dayjs';
-import { post } from '@/utils/api';
+import { put } from '@/utils/api';
 import { errorMsgParse } from '@/utils/utils';
 
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
@@ -16,7 +16,7 @@ const $q = useQuasar();
 
 async function onSubmit() {
     try {
-        const res = await post(`/work_record/${item.value.id}/action/cancel`, {});
+        const res = await put(`/work_record/${item.value.id}/action/cancel`, {});
         onDialogOK(res);
     } catch (err: any) {
         $q.notify({

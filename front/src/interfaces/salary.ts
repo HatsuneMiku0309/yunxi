@@ -32,4 +32,5 @@ export interface IIncomeReportRow {
     commission_price: number;
     profit: number;
     discount_price: number;
+    member_id?: string;
 }

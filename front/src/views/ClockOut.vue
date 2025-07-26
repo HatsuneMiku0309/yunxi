@@ -6,7 +6,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import type { IClockOutPageData } from '@/interfaces/clockOut';
 import { EReceivingPaymentServiceStatus } from '@/interfaces/receivingPayment';
-import { get, post } from '@/utils/api';
+import { get, put } from '@/utils/api';
 import dayjs from 'dayjs';
 
 const $q = useQuasar();
@@ -67,7 +67,7 @@ function onSubmit() {
         },
         persistent: true
     }).onOk(async () => {
-        await post(`/work_record/${itemID}/action/clock_out`, {});
+        await put(`/work_record/${itemID}/action/clock_out`, {});
 
         $q.notify({
             message: '提交成功',

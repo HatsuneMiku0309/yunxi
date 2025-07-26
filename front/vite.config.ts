@@ -9,9 +9,9 @@ import path from 'node:path'
 export default defineConfig({
   server: {
     // allowedHosts: ['yunxi-dev.com'],
-    proxy: {
-      '/api': 'http://192.168.1.5:3000'
-    }
+    // proxy: {
+    //   '/api': 'http://192.168.1.5:3000'
+    // }
   },
   resolve: {
     alias: {

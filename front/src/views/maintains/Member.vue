@@ -16,7 +16,7 @@ const flashingRow = ref<string | null>(null);
 const actionMode = ref<EMemberAction>();
 const form = useTemplateRef<HTMLFormElement>('form');
 const price = ref<string>();
-const isFirst = ref<boolean>(false);
+const isFirst = ref<boolean>(true);
 
 
 async function loadDatas() {
@@ -172,7 +172,7 @@ function onClean() {
     selectItem.value = undefined;
     actionMode.value = undefined;
     price.value = undefined;
-    isFirst.value = false;
+    isFirst.value = true;
 }
 
 function onAction(action: EMemberAction) {

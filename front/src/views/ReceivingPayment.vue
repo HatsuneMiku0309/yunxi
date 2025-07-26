@@ -18,9 +18,13 @@ const editMode = ref<EEditMode>();
 const itemID = ref<number>();
 const list = ref<IReceivingPaymentBaseData[]>();
 
-onMounted(async () => {
+async function loadData() {
     const workRecordRes = await get('/work_records');
     list.value = workRecordRes.data.data;
+}
+
+onMounted(async () => {
+    loadData();
 });
 
 function onClean() {
@@ -63,7 +67,7 @@ function onSubmit() {
                     item: item.value
                 }
             }).onOk(() => {
-                window.location.reload();
+                loadData();
             }).onDismiss(() => {
                 onClean();
             });
