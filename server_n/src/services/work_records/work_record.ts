@@ -286,7 +286,7 @@ export class WorkerRecordService implements IWorkRecordService {
       ...body,
       member_id: body.member_id ? body.member_id : undefined,
       service_pay_platform: servicePayRow.platform,
-      service_pay_price: servicePayRow.is_write ? body.other_pay_price : servicePayRow.price,
+      service_pay_price: servicePayRow.price,
       service_pay_time: servicePayRow.time,
       service_pay_is_write: servicePayRow.is_write,
       service_pay_salary_price: servicePayRow.is_write ? body.other_pay_price : servicePayRow.salary_price,
