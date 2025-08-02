@@ -7,7 +7,6 @@ import { useDialogPluginComponent, useQuasar } from 'quasar';
 import type { IServiceData, IServicePayPageData } from '@/interfaces/service';
 import { put, get, post } from '@/utils/api';
 import { errorMsgParse } from '@/utils/utils';
-import type { TAddition } from '@/interfaces/clockIn';
 
 
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
