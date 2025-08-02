@@ -11,6 +11,11 @@ export interface IClockInPageData {
 }
 
 export type TAddition = 'assign' | 'increase' | 'none';
+export enum EAddtionToCNString {
+    assign = '点钟',
+    increase = '加钟',
+    none = '无'
+}
 
 export interface IClockInPayload {
     work_record_id?: number;

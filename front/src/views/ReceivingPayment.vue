@@ -7,6 +7,7 @@ import CancelDialog from '@/components/receivingPaymentDialogs/CancelDialog.vue'
 import PayDialog from '@/components/receivingPaymentDialogs/PayDialog.vue';
 import { get } from '@utils/api';
 import dayjs from 'dayjs';
+import { EAddtionToCNString } from '@/interfaces/clockIn';
 
 const $q = useQuasar();
 const form = useTemplateRef<HTMLFormElement>('form');
@@ -192,6 +193,7 @@ const isNotIOSAndSafari = computed(() => !$q.platform.is.ios && !$q.platform.is.
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">服务项目</th>
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">服务状态</th>
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">订单状态</th>
+                    <th class="sticky top-0 z-10 bg-brown-14 text-white">点/加</th>
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">开始时间</th>
                     <th class="sticky top-0 z-10 bg-brown-14 text-white">预计结束时间</th>
                 </tr>
@@ -204,6 +206,7 @@ const isNotIOSAndSafari = computed(() => !$q.platform.is.ios && !$q.platform.is.
                     <td>{{ l.service ? l.service.name : '无' }}</td>
                     <td>{{ convertWorkRecordServiceStatsuToCNString[EReceivingPaymentServiceStatus[l.service_status] as keyof typeof EReceivingPaymentServiceStatus] }}</td>
                     <td>{{ convertWorkRecordStatusToCNString[EReceivingPaymentStatus[l.status] as keyof typeof EReceivingPaymentStatus] }}</td>
+                    <td>{{ EAddtionToCNString[l.addition] || '未知' }}</td>
                     <td>{{ l.start_time ? dayjs(l.start_time).format('YYYY-MM-DD HH:mm:ss') : '' }}</td>
                     <td>{{ l.end_time ? dayjs(l.end_time).format('YYYY-MM-DD HH:mm:ss') : '' }}</td>
                 </tr>

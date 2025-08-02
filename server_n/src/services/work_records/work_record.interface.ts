@@ -61,6 +61,7 @@ export interface IWorkRecordCreateOrUpdatePayload {
   service_pay_id?: number;
   status: EWorkRecordStatus;
   worker_id?: number;
+  addition?: TAddition;
 }
 export interface IWorkRecordClockInPayload {
   room_id: number;

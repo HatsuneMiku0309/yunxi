@@ -117,4 +117,5 @@ export interface IReceivingPaymentCreateOrUpdatePayload {
     service_pay_id?: IServicePayBaseData['id'] | null;
     other_pay_price?: number | null;
     status: EReceivingPaymentStatus;
+    addition: TAddition;
 }

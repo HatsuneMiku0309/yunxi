@@ -407,7 +407,6 @@ export class WorkerRecordService implements IWorkRecordService {
       await this._pgDb.setTransaction(conn);
       let _body = {
         ...body,
-        addition: 'none',
         service_status: EWorkRecordServiceStatus.idle
       };
       const { fieldSql, valuesSql, values } = this._pgDb.grantInsertSql(_body);

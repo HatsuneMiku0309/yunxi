@@ -7,6 +7,7 @@ import { useDialogPluginComponent, useQuasar } from 'quasar';
 import type { IServiceData, IServicePayPageData } from '@/interfaces/service';
 import { put, get, post } from '@/utils/api';
 import { errorMsgParse } from '@/utils/utils';
+import type { TAddition } from '@/interfaces/clockIn';
 
 
 const { dialogRef, onDialogOK, onDialogCancel } = useDialogPluginComponent();
@@ -30,7 +31,8 @@ const payload = reactive<IReceivingPaymentCreateOrUpdatePayload>({
     service_id: undefined,
     service_pay_id: undefined,
     other_pay_price: undefined,
-    status: EReceivingPaymentStatus.unpay
+    status: EReceivingPaymentStatus.unpay,
+    addition: 'none'
 });
 
 function checkPayload() {
@@ -116,6 +118,7 @@ onMounted(async () => {
         onChangeServicePayID(item.value?.service_pay_id, true);
         statusTemp.value = item.value!.status;
         payload.status = item.value!.status;
+        payload.addition = item.value!.addition;
     }
 });
 
@@ -198,8 +201,13 @@ const isDisable = computed(() => {
                     <q-select clearable :disable="isDisable" class="p-2" v-model="payload.service_pay_id" :options="servicePays" label="付款选项" option-label="platform" option-value="id" emit-value map-options @update:model-value="onChangeServicePayID"></q-select>
                     <q-input :disable="isDisable" class="p-2" v-if="isOtherPayPrice" lazy-rules :rules="[val => val && val.length > 0 || '请输入金额', val => val && val >= 0 || '请输入大于等于0']" type="number" v-model="payload.other_pay_price" label="其他金额"></q-input>
                     <div class="flex justify-evenly">
-                    <q-radio :disable="isDisable" v-model="payload.status" :val="EReceivingPaymentStatus.unpay" :label="convertWorkRecordStatusToCNString[EReceivingPaymentStatus[EReceivingPaymentStatus.unpay] as keyof typeof EReceivingPaymentStatus]"/>
-                    <q-radio :disable="isDisable" v-model="payload.status" :val="EReceivingPaymentStatus.payed" :label="convertWorkRecordStatusToCNString[EReceivingPaymentStatus[EReceivingPaymentStatus.payed] as keyof typeof EReceivingPaymentStatus]"/>
+                        <q-radio v-model="payload.addition" val="assign" label="点钟"/>
+                        <q-radio v-model="payload.addition" val="increase" label="加钟"/>
+                        <q-radio v-model="payload.addition" val="none" label="无"/>
+                    </div>
+                    <div class="flex justify-evenly">
+                        <q-radio :disable="isDisable" v-model="payload.status" :val="EReceivingPaymentStatus.unpay" :label="convertWorkRecordStatusToCNString[EReceivingPaymentStatus[EReceivingPaymentStatus.unpay] as keyof typeof EReceivingPaymentStatus]"/>
+                        <q-radio :disable="isDisable" v-model="payload.status" :val="EReceivingPaymentStatus.payed" :label="convertWorkRecordStatusToCNString[EReceivingPaymentStatus[EReceivingPaymentStatus.payed] as keyof typeof EReceivingPaymentStatus]"/>
                     </div>
                 </q-card-section>
                 <q-card-actions align="center">
