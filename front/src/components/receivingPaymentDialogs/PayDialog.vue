@@ -209,12 +209,12 @@ function filterFn(val: string, update: Function) {
                 <q-card-section class="q-pt-none">
                     <q-select label="付款选项" v-model="servicePayID" :rules="[val => val !== undefined || '请输入付款选项']" :options="servicePays" option-label="platform" option-value="id" emit-value map-options @update:model-value="onChangeServicePayID"></q-select>
                     <q-select v-if="isMemberCard" clearable use-input @filter="filterFn" label="会员卡" v-model="memberCardID" :options="memberCards" option-label="label" option-value="id" emit-value map-options></q-select>
-                    <q-input v-if="isOtherPayPrice" lazy-rules :rules="[val => val && val.length > 0 || '请输入金额', val => val && val >= 0 || '请输入大于等于0']" type="number" v-model="otherPayPrice" label="其他金额"></q-input>
+                    <q-input v-if="isOtherPayPrice" lazy-rules :rules="[val => val && val.length > 0 || '请输入金额', val => val && val >= 0 || '请输入大于等于0']" type="number" v-model="otherPayPrice" label="其他金额【不得负数】"></q-input>
                 </q-card-section>
                 <q-card-section class="q-pt-none">
-                    <q-input lazy-rules :rules="[val => val && val.length > 0 || '请输入金额', val => val && val >= 0 || '请输入大于等于0']" type="number" v-model="extendPrice" label="额外金额(分润)"></q-input>
-                    <q-input lazy-rules :rules="[val => val && val.length > 0 || '请输入金额', val => val && val >= 0 || '请输入大于等于0']" type="number" v-model="bonusPrice" label="额外奖励金额(不分润)"></q-input>
-                    <q-input lazy-rules :rules="[val => val && val.length > 0 || '请输入金额', val => val && val >= 0 || '请输入大于等于0']" type="number" v-model="discountPrice" label="优惠价格(店承担)"></q-input>
+                    <q-input lazy-rules :rules="[val => val && val.length > 0 || '请输入金额']" type="number" v-model="extendPrice" label="额外金额(分润)【负数代表共同承担】"></q-input>
+                    <q-input lazy-rules :rules="[val => val && val.length > 0 || '请输入金额']" type="number" v-model="bonusPrice" label="额外奖励金额(不分润)【负数代表扣工资】"></q-input>
+                    <q-input lazy-rules :rules="[val => val && val.length > 0 || '请输入金额']" type="number" v-model="discountPrice" label="优惠价格(店承担)【负数代表多收款】"></q-input>
                     <q-input v-model="desc" label="备注"></q-input>
                 </q-card-section>
                 <q-card-actions align="center">

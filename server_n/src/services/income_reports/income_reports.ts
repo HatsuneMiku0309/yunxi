@@ -84,15 +84,16 @@ export class IncomeReportService implements IIncomeReportService {
         _r.date_time = dayjs(_r.pay_time).subtract(11, 'hour').format('YYYY/MM/DD');
         _r.worker_name = worker ? `${worker?.name}(${worker.no})` : '';
         _r.service_name = service ? service.name : '';
-        _r.total_price = new Decimal(_r.price).plus(_r.extend_price || '0').toNumber();
+        _r.commission_price = platform ? new Decimal(_r.price).mul(new Decimal(platform.commission).div(100)).toNumber() : 0;
+        _r.total_price = new Decimal(_r.price).plus(_r.extend_price || '0').sub(_r.commission_price).sub(_r.discount_price).toNumber();
         const _total_price = new Decimal(_price).plus(_r.extend_price || '0').toNumber();
         const _assignPrice = _r.addition === 'assign' ? assignPrice.value : 0;
         const _increasePrice = _r.addition === 'increase' ? increasePrice.value : 0;
         const salary = new Decimal(_total_price).mul(new Decimal(profitSharing.value).div(100)).toNumber();
         _r.total_salary = new Decimal(salary).plus(_assignPrice).plus(_increasePrice).plus(_r.bonus_price || '0').toNumber();
         _r.platform = r.member_id ? `会员卡【${r.member_discount}%】` : platform ? platform.platform : '无';
-        _r.commission_price = platform ? new Decimal(_r.price).mul(new Decimal(platform.commission).div(100)).toNumber() : 0;
-        _r.profit = new Decimal(_r.total_price).sub(_r.total_salary).sub(_r.commission_price).sub(_r.discount_price).toNumber();
+        
+        _r.profit = new Decimal(_r.total_price).sub(_r.total_salary).toNumber();
 
         return _r;
       });
